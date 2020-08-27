@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<script>
+    function Foo() {
+
+    }
+
+    Foo.prototype.show=function () {
+        console.log('aaa')
+    }
+
+    function Sub() {
+
+    }
+
+    Sub.prototype.__proto__=Foo.prototype;
+    Sub.prototype.constructor=Sub;
+    let sub=new Sub();
+    sub.show()
+</script>
+</body>
+</html>
