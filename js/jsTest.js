@@ -1,12 +1,12 @@
 // 非严格相等==
-let arr = [0, '', false, null, undefined]
+let arr = [0, '', false, null, undefined];
 for (let i = 0; i < arr.length; i++) {
     for (let j = 0; j < arr.length; j++) {
         // 类型相同===，类型不同，undefined和null等，bool首先转数字，object ToPrimitive，字符串和数字 字符串会转数字。
         // console.log(arr[i],arr[j],arr[i]==arr[j])
     }
 }
-console.log('__________________')
+console.log('__________________');
 // typeof 和 Object.prototype.toString结果
 // typeof 两个特例 function null
 // Object.prototype.toString 一个特例 Function
@@ -23,7 +23,7 @@ function Foo(a) {
 
 Foo.prototype.show = function () {
     console.log(this.a);
-}
+};
 
 function Sub(a) {
     //调用父类的构造函数，给实例添加构造器属性
@@ -116,12 +116,12 @@ function deepClone(obj,weakMap=new WeakMap()) {
     if (!isObject(obj)) return obj;// 如果是六大基本类型或者函数就直接返回
     // if (obj instanceof Date) return new Date(obj); //一些内置对象我们是可以单独处理的
     // if (obj instanceof RegExp) return new RegExp(obj);
-    let mapValue=map.get(obj)
+    let mapValue=weakMap.get(obj);
     if (mapValue){
         return mapValue
     }
     let cloneObj = new obj.constructor();
-    map.seal(obj,cloneObj);
+    weakMap.set(obj,cloneObj);
     // Reflect.ownKeys(obj);可以取出Symbol做的key
     // 上述方法没有的时候使用    let symKeys = Object.getOwnPropertySymbols(obj);
     for (let key in obj) {
@@ -132,3 +132,22 @@ function deepClone(obj,weakMap=new WeakMap()) {
     }
     return cloneObj
 }
+
+//模块化
+
+// AMD
+// define(['./a', './b'], function(a, b) {
+//     a.do()
+//     b.do()
+// })
+// //CMD
+// define(function(require, exports, module) {
+//     var a = require('./a')
+//     a.doSomething()
+//     var b = require('./b')
+//     b.doSomething()
+// })
+
+
+//防抖debounce 节流throttle
+//详见html

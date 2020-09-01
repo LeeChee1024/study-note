@@ -6,22 +6,58 @@
 </head>
 <body>
 <script>
-    function Foo() {
+    //手动实现防抖
+    //防抖的理解：防抖的话，就函数执行时间不能再上次触发或者运行完之后规定时间内再执行。对于第一次执行可以立即执行也可以延时执行
+    //使用场景：搜索框提示，在最后一次输入之后提示联想，这种采用非立即执行。凡是以最后一次为准的
+    //网络请求、按钮执行：采用立即执行.以第一次为准的
+    //防抖需要的是仅一次有效执行
+    function debounce(func, wait, immediate) {
+        let timer = null;
 
+        function delayRun(params) {
+            timer = setTimeout(() => {
+                func(params);
+                timer = setTimeout(() => {
+                    timer = null;//在最后一次调用之后,仍然间隔五秒才能让下一个调用
+                }, wait)
+            }, wait)
+        }
+
+        return function (...args) {
+            if (timer) {
+                clearTimeout(timer);
+                delayRun(args);
+            } else {
+                if (immediate) func(args);
+                delayRun(args);
+            }
+        }
     }
 
-    Foo.prototype.show=function () {
-        console.log('aaa')
+    //手动实现节流
+    //节流的理解：节流要的是把函数调用的时间间隔扩大，在间隔时间内就不调用，不在间隔时间内就调用
+    //需要的是多次执行，只是把执行的频率给降低了
+
+    function throttle(func, wait) {
+        let isInTime = false;
+        return function (...arg) {
+            if (!isInTime) {
+                isInTime = true;
+                func(arg);
+                setTimeout(() => {
+                    isInTime = false
+                }, wait)
+            }
+        }
     }
 
-    function Sub() {
-
+    function handle() {
+        console.log(new Date().toLocaleTimeString());
     }
 
-    Sub.prototype.__proto__=Foo.prototype;
-    Sub.prototype.constructor=Sub;
-    let sub=new Sub();
-    sub.show()
+    // window.addEventListener("mousemove", debounce(handle, 1500, true));
+    // window.addEventListener("mousemove", throttle(handle, 1500, true));
+
 </script>
 </body>
 </html>
