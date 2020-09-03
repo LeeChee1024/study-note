@@ -184,3 +184,89 @@
 
 //防抖debounce 节流throttle
 //详见html
+
+// ________________________
+//this绑定规则
+
+// 箭头函数,没有prototype
+// 显示绑定bind apply call或者构造绑定
+// 隐士绑定 及 a.b.c.d()绑定到c
+// 默认绑定undefined 或者 global
+
+// new a.b.c() 会绑定到new
+// a.b.c.call(d) 会绑定到d
+// c() 会绑定到undefined 或者 global
+// 会存在一个 既有new 又有显式绑定的情况吗，我没发现
+// new c.bind(d) 按照执行顺序是先bind，返回值没有prototype，不能new，报错
+// new c.apply(d) 按照执行顺序是先apply，然后函数就执行完了，new的就不是那个函数了，new的都不是个函数
+// 所以我认为不会出现new和显示冲突的情况
+
+
+// apply call bind
+// apply和call的区别只是参数的形式不一样，call参数分开，apply参数是数组
+//手动实现call,是Function的prototype方法,apply类似
+// Function.prototype.diyCall = function (context, ...arg) {
+//     context = context || window
+//     context.fn = this;
+//     let result
+//     if (arg.length) {
+//         result = context.fn(...arg);
+//     } else {
+//         result = context.fn();
+//     }
+//     context.fn = undefined;
+//     return result
+// };
+//
+// let a = {
+//     b: 1,
+//     c(d) {
+//         this.d = d
+//         console.log(this.b, this.d)
+//     }
+// };
+// //
+// a.c(1);
+//
+// a.c.diyCall({
+//     b:2
+// },4,5);
+
+// 手动实现bind,不能更改this
+// Function.prototype.diyBind = function (context) {
+//     let fn = this;
+//     let res = function (...arg) {
+//         let _this = context;
+//         if (this instanceof res)_this=this;//确定是new在调用，就new优先，否则bin优先
+//         // let _this = (!this || this ===  global) ? context : this;//js自带的bind应该是没有这一步,有这一步是软bind
+//         return fn.call(_this, ...arg)
+//     };
+//     res.prototype.__proto__ = fn.prototype;//js自带的bind应该是没有这一步，并且返回的函数没有没有prototype
+//     return res;
+// };
+//
+// let test2 = {b: 2};
+// const bindTest = a.c.diyBind(test2);
+//
+// bindTest(2)
+//
+// let test3 = {
+//     b: 3,
+//     c: bindTest
+// }
+// test3.c(3)
+//
+// console.log(test2)
+// let test4 = new bindTest(4)
+// console.log(test2)
+// console.log(test4)
+// bindTest.diyBind({b: 5})(5)
+//
+// let jsBindTest=a.c.bind(test2);
+// console.log(jsBindTest)//没有prototype
+//
+// this.a=7
+// const arrowBindTest=()=>{
+//     console.log(this.a)
+// }
+// console.log(arrowBindTest())
