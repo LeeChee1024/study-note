@@ -270,3 +270,138 @@
 //     console.log(this.a)
 // }
 // console.log(arrowBindTest())
+
+//手动实现promise Promise/A+规范
+//想一下我们如果要实现一个promise需要实现一些什么功能
+//首先有一个Promise构造函数，他的参数是一个处理函数，该处理函数接收又会接收两个参数，一个是resolve一个是reject
+//Promise会在pending状态直接执行处理函数，在处理函数内部主动调用resolve或者reject，或者发生异常被捕获的时候调用reject
+//用then和catch给promise实例 处理对应情况函数，then会传入onFulfilled、onRejected两个函数，
+//当then被调用的时候，可能状态还处于pending（比如你在后面直接接了then，但是网络请求还没有回来）
+// ，这个时候要把处理函数储存起来，如果处于fulfilled，就一口气把缓存的处理函数都执行
+// new Promise((resolve, reject) => {
+//     let num = Math.random();
+//     console.log('Promise before change status')
+//     setTimeout(() => {
+//         num > 0.5 ? resolve(num) : reject(num)
+//     })
+// }).then((...arg) => {
+//     console.log('onFulfilled', arg)
+//     // throw new Error({
+//     //     text:'from onFulfilled'
+//     // })
+//     return new Promise((resolve, reject) => resolve('tets'))
+// }, (...arg) => {
+//     console.log('onRejected', arg)
+// }).then((...arg) => {
+//     console.log('onFulfilled 2', arg)
+// }).catch((...arg) => {
+//     console.log('catch', arg)
+// });
+// console.log('Promise before then');
+
+// MyPromiseStatus = {
+//     pending: 'pending',
+//     resolved: 'resolved',
+//     rejected: 'rejected'
+// };
+//
+// function MyPromise(func) {
+//     this.status = MyPromiseStatus.pending;
+//     this.resolveCallbackList = [];
+//     this.rejectCallbackList = [];
+//
+//     this.resolve = function (value) {
+//         if (value instanceof MyPromise) {
+//             value.then(this.resolve, this.reject);
+//             return
+//         }
+//         // process.nextTick(() => { 是否有必要，毕竟注册函数已经是微任务了
+//             if (this.status !== MyPromiseStatus.pending) return;
+//             this.status = MyPromiseStatus.resolved;
+//             this.value = value;
+//             this.resolveCallbackList.forEach(callback => callback());
+//         // })
+//     };
+//
+//     this.reject = function (reason) {
+//         // process.nextTick(() => {
+//             if (this.status !== MyPromiseStatus.pending) return;
+//             this.status = MyPromiseStatus.rejected;
+//             this.value = reason;
+//             this.rejectCallbackList.forEach(callback => callback());
+//         // })
+//     };
+//
+//     try {
+//         func(this.resolve, this.reject())
+//     } catch (e) {
+//         this.reject(e)
+//     }
+// }
+//
+// MyPromise.prototype.then = function (onFulfilled, onRejected) {
+//     let newPromise;
+//     let runFunc = (callback) => (resolve, reject) => {
+//         process.nextTick(() => {
+//             try {
+//                 let res = callback(this.value);
+//                 resolvePromise(newPromise, res, resolve, reject)
+//             } catch (e) {
+//                 reject(e);
+//             }
+//         })
+//     };
+//
+//     if (this.status === MyPromiseStatus.resolved) {
+//         return newPromise = new MyPromise(runFunc(onFulfilled));
+//     }
+//
+//     if (this.status === MyPromiseStatus.rejected) {
+//         return newPromise = new MyPromise(runFunc(onRejected));
+//     }
+//
+//     if (this.status === MyPromiseStatus.pending) {
+//         return newPromise = new MyPromise((resolve, reject) => {
+//             this.resolveCallbackList.push(() => runFunc(onFulfilled)(resolve, reject));
+//             this.rejectCallbackList.push(() => runFunc(onRejected)(resolve, reject))
+//         })
+//     }
+// };
+//
+// function resolvePromise(newPromise, res, resolve, reject) {
+//     if (newPromise === res) {
+//         throw reject(new Error())
+//     }
+//     if (res instanceof MyPromise) {
+//         if (res.status === MyPromiseStatus.pending) {
+//             res.then(
+//                 value => resolvePromise(newPromise, value, resolve, reject),
+//                 reject
+//             )
+//         } else {
+//             res.then(resolve, reject);
+//         }
+//     } else if (res && res.then && typeof res.then === 'function') {
+//         let called = false;
+//         try {
+//             res.then(
+//                 value => {
+//                     if (called) return;
+//                     called = true;
+//                     resolvePromise(newPromise, value, resolve, reject)
+//                 },
+//                 reason => {
+//                     if (called) return;
+//                     called = true;
+//                     reject(reason)
+//                 }
+//             )
+//         } catch (e) {
+//             if (called) return;
+//             called = true;
+//             reject(e)
+//         }
+//     } else {
+//         resolve(res);
+//     }
+// }
